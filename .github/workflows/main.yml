@@ -49,7 +49,6 @@ jobs:
           name: react-build
           path: build/
 
-
   DeployStaging:
     name: Deploy to Staging (EC2)
     if: github.event.ref == 'refs/heads/master'
@@ -57,7 +56,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: Staging
-      url: 'http://34.238.85.21'
+      url: 'http://44.202.30.0/'
     steps:
       - name: Download Build Artifacts
         uses: actions/download-artifact@v3
@@ -73,7 +72,8 @@ jobs:
 
       - name: Deploy React App to Staging Server
         run: |
-          scp -r -o StrictHostKeyChecking=no build/* ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST_STAGING }}:/usr/share/nginx/html/
+          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST_STAGING }} "rm -rf /var/www/staging/*"
+          scp -r -o StrictHostKeyChecking=no build/* ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST_STAGING }}:/var/www/staging/
           ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST_STAGING }} "sudo systemctl restart nginx"
 
   DeployProd:
@@ -82,7 +82,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: Production
-      url: 'http://<PRODUCTION_EC2_PUBLIC_IP>'
+      url: 'http://18.212.201.3/'
     steps:
       - name: Download Build Artifacts
         uses: actions/download-artifact@v3
@@ -98,5 +98,6 @@ jobs:
 
       - name: Deploy React App to Production Server
         run: |
-          scp -r -o StrictHostKeyChecking=no build/* ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST_PROD }}:/usr/share/nginx/html/
+          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST_PROD }} "rm -rf /var/www/production/*"
+          scp -r -o StrictHostKeyChecking=no build/* ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST_PROD }}:/var/www/production/
           ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST_PROD }} "sudo systemctl restart nginx"
